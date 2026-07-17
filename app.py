@@ -4,9 +4,13 @@ import os
 import re
 import pandas as pd
 from io import BytesIO
+# pyrefly: ignore [missing-import]
 from nltk.corpus import stopwords
+# pyrefly: ignore [missing-import]
 from nltk.stem import WordNetLemmatizer
+# pyrefly: ignore [missing-import]
 from nltk.tokenize import word_tokenize
+# pyrefly: ignore [missing-import]
 import nltk
 
 # Download NLTK data if not present
