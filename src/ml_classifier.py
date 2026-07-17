@@ -10,19 +10,35 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.svm import LinearSVC
 from sklearn.metrics import (classification_report, confusion_matrix,
                              f1_score, cohen_kappa_score,
                              balanced_accuracy_score)
 
+# pyrefly: ignore [missing-import]
 from imblearn.over_sampling import RandomOverSampler
+# pyrefly: ignore [missing-import]
 from imblearn.under_sampling import RandomUnderSampler
 
 sns.set_theme(style="whitegrid", palette="muted", font_scale=1.1)
+
+
+def _save_cm(y_true, y_pred, title, filename, plots_dir):
+    """Plot and save confusion matrix."""
+    cm = confusion_matrix(y_true, y_pred, labels=['Positive', 'Neutral', 'Negative'])
+    fig, ax = plt.subplots(figsize=(6, 5))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax,
+                xticklabels=['Positive', 'Neutral', 'Negative'],
+                yticklabels=['Positive', 'Neutral', 'Negative'])
+    ax.set_title(title, fontsize=12, fontweight='bold')
+    ax.set_xlabel('Predicted Label')
+    ax.set_ylabel('True Label')
+    plt.tight_layout()
+    plt.savefig(os.path.join(plots_dir, filename), dpi=150)
+    plt.close()
 
 
 def _eval_model(name, y_true, y_pred, results):
@@ -112,12 +128,9 @@ def run_ml_classifiers(df, plots_dir):
     print(f"\n  [3] Logistic Regression (balanced)")
     lr_bal = LogisticRegression(max_iter=1000, class_weight='balanced', random_state=42)
     lr_bal.fit(X_train_tfidf, y_train)
-    results = _eval_model("LR (balanced)", y_test, lr_bal.predict(X_test_tfidf), results)
-
-    print(f"\n  [4] LinearSVC (balanced)")
-    svc = LinearSVC(class_weight='balanced', max_iter=2000, random_state=42)
-    svc.fit(X_train_tfidf, y_train)
-    results = _eval_model("SVC (balanced)", y_test, svc.predict(X_test_tfidf), results)
+    y_pred_bal = lr_bal.predict(X_test_tfidf)
+    results = _eval_model("LR (balanced)", y_test, y_pred_bal, results)
+    _save_cm(y_test, y_pred_bal, "Confusion Matrix - LR (Balanced Weights)", "6_cm_lr_balanced.png", plots_dir)
 
     # ======== TECHNIQUE 2 ========
     print(f"\n  {'='*60}")
@@ -147,23 +160,9 @@ def run_ml_classifiers(df, plots_dir):
     print(f"\n  [6] Logistic Regression (oversampled)")
     lr_ros = LogisticRegression(max_iter=1000, random_state=42)
     lr_ros.fit(X_ros, y_ros)
-    results = _eval_model("LR (oversample)", y_test, lr_ros.predict(X_test_tfidf), results)
-
-    # ======== HYPERPARAMETER TUNING ========
-    print(f"\n  {'='*60}")
-    print(f"  HYPERPARAMETER TUNING (GridSearchCV)")
-    print(f"  {'='*60}")
-
-    param_grid = {'C': [0.1, 1, 10], 'solver': ['lbfgs', 'liblinear']}
-    gs = GridSearchCV(
-        LogisticRegression(max_iter=1000, class_weight='balanced', random_state=42),
-        param_grid, scoring='f1_macro', cv=3, n_jobs=-1)
-    gs.fit(X_train_tfidf, y_train)
-    print(f"  Best params: {gs.best_params_}")
-    print(f"  Best CV Macro F1: {gs.best_score_:.4f}")
-
-    print(f"\n  [7] LR (tuned + balanced)")
-    results = _eval_model("LR (tuned)", y_test, gs.predict(X_test_tfidf), results)
+    y_pred_ros = lr_ros.predict(X_test_tfidf)
+    results = _eval_model("LR (oversample)", y_test, y_pred_ros, results)
+    _save_cm(y_test, y_pred_ros, "Confusion Matrix - LR (Oversampled)", "7_cm_lr_oversampled.png", plots_dir)
 
     # ======== FINAL COMPARISON TABLE ========
     print(f"\n  {'='*68}")
@@ -207,5 +206,5 @@ def run_ml_classifiers(df, plots_dir):
     print("|{:^68s}|".format("TASK 5 COMPLETE  |  1 chart saved"))
     print("+" + "-"*68 + "+")
 
-    best_model = gs.best_estimator_
+    best_model = lr_bal
     return df, best_model, tfidf, X_test, y_test, X_test_tfidf, results

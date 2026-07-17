@@ -6,6 +6,7 @@
 """
 import os
 import warnings
+import joblib
 
 warnings.filterwarnings('ignore')
 
@@ -50,6 +51,14 @@ def main():
 
     # Task 6
     run_error_analysis(df, best_model, tfidf, X_test, y_test, X_test_tfidf)
+
+    # Save model and vectorizer for the Web App
+    model_path = os.path.join(BASE, "sentiment_model.pkl")
+    vectorizer_path = os.path.join(BASE, "tfidf_vectorizer.pkl")
+    joblib.dump(best_model, model_path)
+    joblib.dump(tfidf, vectorizer_path)
+    print(f"\n  [INFO] Saved Model to {model_path}")
+    print(f"  [INFO] Saved Vectorizer to {vectorizer_path}")
 
     # Done
     print()

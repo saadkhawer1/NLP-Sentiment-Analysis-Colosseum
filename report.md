@@ -83,11 +83,17 @@ Negation words (`not`, `never`, `don't`, `can't`, `won't`, etc.) are **explicitl
 
 ### Before/After Examples:
 
-| # | Before (raw) | After (cleaned) |
-|---|-------------|----------------|
-| 1 | "A must see for any visitor to Rome, but go to the visitor centres..." | "must see visitor rome visitor centre buy front queue pass ticket..." |
-| 2 | "We booked a tour... horrific experience... the tour guide never showed up!" | "booked tour horrific experience tour guide never showed..." |
-| 3 | "Not worth the €30 entry ticket. Best to take a picture from outside..." | "not worth entry ticket best take picture outside..." |
+**Example 1**
+- **Before:** "A must see for any visitor to Rome, but go to the visitor centres..."
+- **After:** "must see visitor rome visitor centre buy front queue pass ticket..."
+
+**Example 2**
+- **Before:** "We booked a tour... horrific experience... the tour guide never showed up!"
+- **After:** "booked tour horrific experience tour guide never showed..."
+
+**Example 3**
+- **Before:** "Not worth the €30 entry ticket. Best to take a picture from outside..."
+- **After:** "not worth entry ticket best take picture outside..."
 
 ---
 
@@ -133,14 +139,24 @@ We use **macro-averaged F1** as the primary metric, which treats all classes equ
 
 ![Model Comparison](plots/5_model_comparison.png)
 
-### 5.4 Techniques Comparison
+### 5.4 Confusion Matrices for Top 2 Models
+
+To better understand how our best models handle the imbalanced classes, here are their confusion matrices:
+
+**1. Logistic Regression (Balanced Weights)**  
+![CM LR Balanced](plots/6_cm_lr_balanced.png)
+
+**2. Logistic Regression (Oversampled)**  
+![CM LR Oversampled](plots/7_cm_lr_oversampled.png)
+
+### 5.5 Techniques Comparison
 
 - **Baseline models** (LR, MNB) without any imbalance handling achieve high accuracy (~90%) but **zero recall** on minority classes — completely useless.
 - **Class weighting** (`class_weight='balanced'`) is the simplest fix and delivers the best Negative recall (0.611) with strong macro F1.
 - **Random oversampling** achieves the highest overall macro F1 (0.587) with balanced performance.
 - **Random undersampling** maximizes Negative recall (0.708) but sacrifices too much positive precision.
 
-### 5.5 Trade-off Recommendation
+### 5.6 Trade-off Recommendation
 
 For a **tourism company wanting to flag negative reviews for follow-up**, we recommend **LR with class_weight='balanced'** because:
 - **Highest Negative recall (0.611)** — catches 61% of genuinely negative reviews
@@ -154,13 +170,11 @@ For a **tourism company wanting to flag negative reviews for follow-up**, we rec
 
 Out of 1,657 test reviews, **181 were misclassified** (89.1% accuracy). Key error patterns:
 
-| Pattern | Example | Why it fails |
-|---------|---------|-------------|
-| **Mixed sentiment** | Praises Colosseum but complains about queues/scammers | Model picks up positive words, misses complaints |
-| **Short reviews** | "Course stay rome mythical monument" | Too little context for reliable classification |
-| **Sarcasm/irony** | "Amazing wait times" (negative intent) | Word-level models read "amazing" as positive |
-| **Neutral ambiguity** | 3-star reviews with both praise and criticism | Sits on decision boundary |
-| **Domain-specific complaints** | Queues, heat, ticket issues, scams | Uses neutral vocabulary the model doesn't flag |
+- **Mixed sentiment:** Praises Colosseum but complains about queues/scammers. *(Why it fails: Model picks up positive words, misses complaints)*
+- **Short reviews:** "Course stay rome mythical monument". *(Why it fails: Too little context for reliable classification)*
+- **Sarcasm/irony:** "Amazing wait times" (negative intent). *(Why it fails: Word-level models read "amazing" as positive)*
+- **Neutral ambiguity:** 3-star reviews with both praise and criticism. *(Why it fails: Sits on decision boundary)*
+- **Domain-specific complaints:** Queues, heat, ticket issues, scams. *(Why it fails: Uses neutral vocabulary the model doesn't flag)*
 
 ---
 
