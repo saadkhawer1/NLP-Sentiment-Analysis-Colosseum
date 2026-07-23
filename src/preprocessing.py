@@ -1,6 +1,8 @@
 """
 Task 3 - Text Preprocessing
 """
+
+# text ko simple clean krna ha because ml model doesnot understand raw text
 import re
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -18,13 +20,13 @@ NEGATION_WORDS = {
 stop_words = set(stopwords.words('english')) - NEGATION_WORDS
 lemmatizer = WordNetLemmatizer()
 
-
+# convert the words into lowercase
 def clean_text(text):
     """Clean a single review: lowercase, remove punct/numbers, lemmatize."""
     text = str(text).lower()
-    text = re.sub(r'http\S+|www\S+', '', text)
+    text = re.sub(r'http\S+|www\S+', '', text) # remove all url links
     text = re.sub(r'[^a-z\s]', ' ', text)
-    tokens = word_tokenize(text)
+    tokens = word_tokenize(text) # convert/slpit the text into list of words 
     tokens = [lemmatizer.lemmatize(t) for t in tokens
               if t not in stop_words and len(t) > 2]
     return ' '.join(tokens)

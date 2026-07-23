@@ -40,7 +40,7 @@ def run_error_analysis(df, model, tfidf, X_test, y_test, X_test_tfidf):
     print(f"  {'-'*66}")
 
  # print first 10 wrong predictions
-    for i in range(n_show):
+    for  i in range(n_show):
         row = misclassified.iloc[i]
         txt = str(row['text'])[:120].replace('\n', ' ')
         print(f"\n  [{i+1}] True: {row['true_label']:<10s}  Predicted: {row['pred_label']}")

@@ -35,6 +35,7 @@ def run_eda(df, plots_dir):
     plt.tight_layout()
     plt.savefig(os.path.join(plots_dir, "1_rating_distribution.png"), dpi=150)
     plt.close()
+    
 
     print(f"    {'Rating':<10s} {'Count':<10s} {'Percentage':<12s}")
     print(f"    {'-'*32}")
